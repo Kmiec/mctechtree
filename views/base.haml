@@ -2,13 +2,23 @@
 %html
   %head
     = bootstrap_assets
-    %script(src="/chosen/chosen.jquery.js")
-    %link(rel="stylesheet" href="/chosen/chosen.css")
+    %script(src="/jquery.autocomplete.js")
     :css
       i.example {
         text-decoration: underline;
       }
+      small.hint {
+        float: right;
+        font-size: small;
+      }
       dl { margin-top: 0; }
+      .autocomplete-suggestions {
+        background: #fff;
+        border: 1px solid #000;
+      }
+      .autocomplete-selected {
+        background: #ACF;
+      }
   %body
     %a(href="http://github.com/k3rni/mctechtree")
       %img(style="position:absolute; top:0; right:0; border:0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png" alt="Fork me on GitHub")
@@ -29,5 +39,3 @@
                       - if subcount > 0
                         %span{title: multigroup_text(submodules(cluster))}(style="text-decoration: underline") +#{subcount}
       = yield
-    :javascript
-      $('.chzn-select').chosen({search_contains: true})
