@@ -1,6 +1,7 @@
 require 'i18n'
 require 'sinatra'
 require 'rack/cache'
+require 'json'
 
 I18n.load_path += Dir[File.join(File.dirname(__FILE__), 'locale', '*.yml')]
 
@@ -12,6 +13,10 @@ class TechTreeApp < Sinatra::Base
 
   def self.db= value
     @@db = value
+  end
+
+  def cluster_name group
+    I18n.t("clusters.#{group}")
   end
 
   helpers do
@@ -42,8 +47,9 @@ class TechTreeApp < Sinatra::Base
     end
 
     def multigroup_text groups
-      groups.map{ |group| I18n.t("clusters.#{group}") }.to_sentence
+      groups.map{ |group| cluster_name(group) }.to_sentence
     end
+
   end
 
   error UncraftableItemError do
@@ -55,8 +61,35 @@ class TechTreeApp < Sinatra::Base
     haml :index, layout: :base
   end
 
+  get '/ds/:group.json' do
+    content_type :json
+    # TODO: build static files
+    @@db.crafted.select { |item| item.group == params[:group] }.map do |item| 
+      { value: item.name, slug: item.name.downcase.gsub(/\W/, '-') }
+    end.to_json
+  end
+
+  get '/suggestions.js' do
+    content_type :json
+    cache_control :public, max_age: 60
+    'var suggestions = ' + @@db.crafted.map do |item|
+      { value: item.name, data: {name: item.name, group: cluster_name(item.group)} }
+    end.to_json
+  end
+
+  get '/ac' do
+    content_type :json
+    query = params[:query]
+    { suggestions: @@db.like(query).map do |item|
+      { value: item.name, data: {name: item.name, group: cluster_name(item.group)} }
+    end}.to_json
+  end
+
   post '/solve.?:format?' do
-    items = params[:items]
+    items = params[:items].split(',').map(&:strip).select do |name| 
+      @@db.find(name.gsub(/\*\d+$/, '')) # reject invalid names TODO: throw error
+    end
+    puts "*********** #{items.inspect}"
     solveopts = {}
     if (tier = params[:tier])
       tier = tier.to_i
@@ -72,7 +105,9 @@ class TechTreeApp < Sinatra::Base
     end
     item_resolver = make_item_resolver(solveopts)
     solutions = items.map do |name|
-      item_resolver.new(@@db.find(name), 1).resolve
+      name = name.gsub(/\*(\d+)/, '')
+      count = $1.to_i || 1
+      item_resolver.new(@@db.find(name), count).resolve
     end
     solver = Solver.new(solutions, solveopts).solve
 
