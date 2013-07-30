@@ -16,6 +16,10 @@ class Database < Set
         select { |obj| obj.name == name }.first
     end
 
+    def like(name)
+      select { |obj| obj.name.gsub(' ', '') =~ Regexp.new(name) }
+    end
+
     def crafted
       select { |item| item.crafts.size > 0 }
     end

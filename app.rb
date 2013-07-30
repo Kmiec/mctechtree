@@ -70,7 +70,7 @@ class TechTreeApp < Sinatra::Base
   end
 
   get '/suggestions.js' do
-    content_type :json
+    content_type :js
     cache_control :public, max_age: 60
     'var suggestions = ' + @@db.crafted.map do |item|
       { value: item.name, data: {name: item.name, group: cluster_name(item.group)} }

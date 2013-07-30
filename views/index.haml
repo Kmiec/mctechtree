@@ -5,14 +5,6 @@
         %legend 
           %small.hint.hidden-phone type item names, separate with commas
           I want to craft...
-        -# %select(name="tier"){style:"width:20%; float:right"}
-        -#   - (0..5).each do |lvl|
-        -#     %option(value=lvl)= I18n.t("tiers.t#{lvl}")
-        -# %select.chzn-select{name: 'items[]', data: {placeholder: 'type item names'}, multiple: true}(style="width: 80%")
-        -#   - advanced_item_groups.each do |groups, items|
-        -#     %optgroup{label: multigroup_text(groups)}
-        -#       - items.each do |name|
-        -#         %option(value=name)= name
         %input#solve(name="items" placeholder="type item names" style="width: 30em")
         %span.help-block(style="text-align: center")
           %small
@@ -38,7 +30,7 @@
         %i.example induction furnace,
         %i.example retriever
       %button.btn.btn-primary.btn-large.btn-block(type="submit" style="width: 10em") Explain!
-%script(src="/suggestions.js")
+%script(src="/suggestions.js" type="text/javascript")
 :javascript
   $(function() {
     $('.toggle-more').click(function() {
@@ -48,16 +40,14 @@
     $('.example').click(function() {
       var itemname = $(this).text().replace(',', '');
       $('option[value="'+itemname+'"]').attr('selected', true);
-      // $('select').trigger('liszt:updated');
     });
     $('#solve').autocomplete({
-      serviceUrl: '/ac',
-      suggestions: suggestions,
+      lookup: suggestions,
       formatResults: function(data) {
         return data.name + '(' + data.group + ')'
       },
       delimiter: /(?:\*\d+)?,\s*/,
-      minChars: 4
+      minChars: 2
     })
   })
 
