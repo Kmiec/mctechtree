@@ -43,9 +43,6 @@
     });
     $('#solve').autocomplete({
       lookup: suggestions,
-      formatResults: function(data) {
-        return data.name + '(' + data.group + ')'
-      },
       delimiter: /(?:\*\d+)?,\s*/,
       minChars: 2
     })
